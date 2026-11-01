@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.borhanaldeen.debtbook",
+        "sha256_cert_fingerprints": ["45:FD:6D:84:73:70:E8:58:CF:58:CA:6D:2B:50:24:9E:26:DB:2B:A0:73:84:54:62:FF:3D:5C:2F:AA:36:6B:A0"]
+      }
+    }]
