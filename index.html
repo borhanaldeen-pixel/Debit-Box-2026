@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دفتر الديون</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F1EC;--card:#FBF9F6;--peach:#F4A77B;--or:#F28C38;--track:#E6E3DB;--ink:#232323;--mute:#8E8A84;--white:#fff;--r:26px;--page:#D0C8C1;--bgb:#F1E4D8;--bg2:var(--bg2);--line:var(--line);--tint:color-mix(in srgb,var(--peach) 16%,var(--white));--tint2:color-mix(in srgb,var(--peach) 9%,var(--white));--ff:"DM Sans","Tajawal",sans-serif}
+[data-mode=dark]{--bg:#1C1B19;--card:#262421;--white:#2A2825;--track:#3B3833;--ink:#F4F1EC;--mute:#A39E96;--page:#0E0D0C;--bgb:#221F1B;--bg2:#34312D;--line:#3A3733}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--ff);background:var(--page);color:var(--ink);min-height:100vh}
+.app{max-width:460px;margin:0 auto;background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 55%,var(--bgb) 100%);min-height:100vh;padding:max(14px,env(safe-area-inset-top)) 16px 120px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+header h1{font-size:1rem;font-weight:500}
+.ibtn{width:46px;height:46px;border-radius:16px;background:var(--white);border:0;font-size:1.2rem;display:grid;place-items:center;position:relative;cursor:pointer}
+.ibtn i{position:absolute;top:10px;left:11px;width:8px;height:8px;border-radius:50%;background:var(--peach)}
+.card{background:linear-gradient(180deg,var(--white),var(--card));border-radius:var(--r);padding:16px;margin-bottom:12px}
+.card h2{font-size:.95rem;font-weight:700;margin-bottom:10px}
+.mute{color:var(--mute);font-size:.8rem}
+.peach{color:var(--peach)}
+input{font:inherit;width:100%;border:2px solid transparent;background:var(--bg);border-radius:18px;padding:14px 16px;font-size:1.05rem;color:var(--ink);outline:0}
+input:focus{border-color:var(--peach)}
+.row{display:flex;gap:8px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:0;background:var(--track);color:var(--ink);border-radius:999px;padding:9px 15px;font:inherit;font-size:.85rem;cursor:pointer}
+.chip.on{background:var(--peach);color:#232323}
+.btn{width:100%;border:0;border-radius:20px;background:var(--peach);color:#232323;font:inherit;font-weight:800;font-size:1.05rem;padding:16px;cursor:pointer}
+.btn:active,.chip:active{transform:scale(.97)}
+.btn.dark{background:var(--ink);color:var(--bg)}
+.quick{background:var(--track);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.quick .btn{margin-top:4px}
+.mic{flex:0 0 54px;border:0;border-radius:18px;background:var(--white);font-size:1.3rem;cursor:pointer}
+.mic.live{background:var(--peach)}
+/* gauge */
+.gauge{position:relative;margin:4px -4px 0}
+.gauge svg{width:100%;display:block}
+.gc{position:absolute;inset:auto 0 6px;text-align:center}
+.gc .d{font-size:.85rem}
+.gc .n{font-size:2rem;font-weight:700;margin:2px 0}
+.gc .n small{font-size:1.1rem}
+.gc .g{font-size:.9rem;color:var(--peach)}
+.bolt{color:var(--peach);font-size:1.1rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.stat{background:var(--bg);border-radius:18px;padding:12px}
+.stat b{display:block;font-size:1.05rem;margin-top:2px}
+.level{display:flex;align-items:center;gap:12px;margin-top:12px}
+.level .lbl{font-size:1.1rem;color:var(--mute);min-width:52px}
+.pills{display:flex;gap:7px}
+.pill{width:22px;height:40px;border-radius:12px;background:var(--track)}
+.pill.on{background:var(--peach)}
+/* debt cards */
+.debt{background:linear-gradient(180deg,var(--white),var(--card));border-radius:var(--r);padding:14px;margin-bottom:10px}
+.dt{display:flex;align-items:center;gap:12px}
+.av{width:54px;height:54px;border-radius:50%;background:#232323;color:var(--peach);display:grid;place-items:center;font-weight:800;font-size:1.3rem;flex:0 0 54px}
+.dt .nm{flex:1;min-width:0}
+.dt .nm b{font-size:1.05rem;display:block;line-height:1.35;overflow-wrap:anywhere}
+.dt .am{text-align:left;direction:ltr;font-family:'DM Sans',sans-serif}
+.dt .am b{font-size:1.35rem;display:block}
+.bar{height:8px;background:var(--track);border-radius:9px;margin:12px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--peach);border-radius:9px}
+.acts{display:flex;gap:8px}
+.acts .chip{flex:1;text-align:center}
+.done{opacity:.55}
+.empty{text-align:center;padding:26px 10px}
+/* sheets */
+.sheet{position:fixed;inset:0;background:rgba(35,35,35,.45);display:none;align-items:flex-end;z-index:30}
+.sheet.show{display:flex}
+.sheet>div{background:var(--bg);width:100%;max-width:460px;margin:0 auto;border-radius:30px 30px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+/* nav */
+nav{position:fixed;bottom:0;left:0;right:0;max-width:460px;margin:0 auto;background:var(--ink);border-radius:32px 32px 0 0;display:flex;align-items:center;justify-content:space-around;padding:12px 10px calc(14px + env(safe-area-inset-bottom));z-index:20}
+nav button{background:0;border:0;color:var(--white);font-size:1.35rem;cursor:pointer;padding:8px}
+nav button.cur{color:var(--peach)}
+nav .mid{background:var(--peach);color:var(--ink);width:64px;height:64px;border-radius:22px;margin-top:-30px;font-size:1.8rem;font-weight:700}
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-size:.9rem;opacity:0;pointer-events:none;transition:.25s;z-index:40;white-space:nowrap}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.logo{width:56px;height:56px;border-radius:20px;background:linear-gradient(160deg,color-mix(in srgb,var(--or) 72%,#fff),var(--or));display:grid;place-items:center;font-size:1.6rem;box-shadow:0 8px 18px rgba(242,140,56,.3)}
+.top .t{flex:1}.top h1{font-size:1.5rem;font-weight:800}
+.qa{background:linear-gradient(180deg,var(--white),var(--card));border-radius:38px;padding:20px 16px 16px;margin-bottom:14px;border:1px solid var(--line)}
+.qh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.qh h2{font-size:1.25rem;font-weight:800}.qh h2 span{color:#E8A23A}
+.badge{background:var(--tint);color:var(--or);font-weight:800;font-size:.8rem;padding:10px 16px;border-radius:999px}
+.ents{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.ent{display:flex;align-items:center;gap:10px;background:var(--white);border:2px solid var(--line);border-radius:26px;padding:10px;font:inherit;color:var(--ink);cursor:pointer;text-align:start;min-width:0;transition:.15s}
+.ent.sel{border-color:var(--or);background:var(--tint2);box-shadow:0 0 0 3px rgba(242,140,56,.15)}
+.ei{width:52px;height:52px;flex:0 0 52px;border-radius:18px;background:var(--tint);display:grid;place-items:center;font-size:1.6rem}
+.en{min-width:0;display:flex;flex-direction:column;gap:3px}
+.en b{font-size:.95rem;font-weight:800;line-height:1.35;overflow-wrap:anywhere}
+.en small{color:var(--mute);font-size:.78rem}
+.ent.new{border:2px dashed color-mix(in srgb,var(--or) 45%,var(--white));background:none;color:var(--or);font-weight:800;justify-content:center;font-size:1rem}
+.ent:active,.amts button:active,.addb:active{transform:scale(.97)}
+.arow{display:flex;gap:10px;margin:6px 0 10px;padding-top:14px;border-top:2px solid var(--line)}
+.arow input{flex:1;min-width:0;height:78px;text-align:center;font-size:2rem;font-weight:800;border-radius:26px;background:var(--bg2);color:#8E8A84}
+.arow input:focus{color:var(--ink)}
+.addb{flex:0 0 38%;border:0;border-radius:26px;background:linear-gradient(160deg,color-mix(in srgb,var(--or) 72%,#fff),color-mix(in srgb,var(--or) 88%,#a03000));color:#fff;font:inherit;font-weight:800;font-size:1.25rem;cursor:pointer;box-shadow:0 10px 20px rgba(238,116,50,.3)}
+.amts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.amts button{border:2px solid var(--line);background:var(--bg2);border-radius:22px;padding:16px;font:inherit;font-weight:800;font-size:1.05rem;color:var(--ink);cursor:pointer}
+.selt{text-align:center;color:var(--mute);margin-top:14px;font-size:.9rem}
+.emo{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.emo button{width:48px;height:48px;border-radius:16px;border:2px solid transparent;background:var(--white);font-size:1.5rem;cursor:pointer}
+.emo button.on{border-color:var(--or);background:var(--tint2)}
+nav{padding:12px 14px calc(14px + env(safe-area-inset-bottom));border-radius:0;max-width:none;background:#232323}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font:inherit;font-weight:700;font-size:.85rem;border-radius:26px;padding:12px 4px;color:#fff;max-width:110px}
+nav button span{font-size:1.5rem}
+nav button.cur{background:linear-gradient(160deg,color-mix(in srgb,var(--or) 72%,#fff),var(--or));color:#fff}
+
+.gauge.sm{max-width:320px;margin:6px auto 0}.sm .gc .n{font-size:1.6rem}
+.tb .tbh{display:flex;justify-content:space-between;gap:10px;font-size:.95rem}.tb .tbh b{overflow-wrap:anywhere}
+.sheet>div{max-height:90vh;overflow:auto}.sheet input{background:var(--white)}
+.lb{color:var(--mute);font-size:.85rem;margin:12px 0 6px}
+.sh{font-size:1rem;margin:20px 0 4px;padding-top:14px;border-top:2px solid var(--line)}
+.wide{width:100%;margin-top:10px;padding:13px;display:block;text-align:center}
+.sws{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sw{width:40px;height:40px;border-radius:50%;border:3px solid var(--bg);outline:2px solid transparent;cursor:pointer}
+.sw.on{outline-color:var(--ink)}
+#cc{width:44px;height:44px;flex:0 0 44px;padding:0;border:0;border-radius:50%;background:none}
+.rli{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.tag{display:inline-block;background:var(--tint);border-radius:999px;padding:4px 10px;font-size:.78rem;margin-top:6px}
+.toast{bottom:118px;white-space:normal;text-align:center;width:max-content;max-width:90vw}
+.toast button{margin-inline-start:12px;background:var(--peach);border:0;border-radius:999px;padding:5px 14px;font:inherit;font-weight:800;color:#232323;cursor:pointer}
+.acts .chip.s{flex:.55}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F28C38">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="دفتر الديون">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="logo">💳</div>
+  <div class="t"><h1>صفحة الدين</h1><div class="mute">دفتر الديون ▪ الراتب ▪ الصدقة</div></div>
+  <button class="ibtn" onclick="openRL()" aria-label="التذكيرات">🔔<i id="bellDot" style="display:none"></i></button>
+  <button class="ibtn" onclick="openSheet('setSheet')" aria-label="الإعدادات" style="margin-inline-start:8px">⚙️</button>
+</header>
+
+<!-- إضافة سريعة (أول الصفحة) -->
+<section class="qa" id="secAdd">
+  <div class="qh"><h2><span>⚡</span> أضف ديناً الآن</h2><span class="badge">سريع جداً</span></div>
+  <p class="mute" style="font-size:.95rem">اختر الجهة واكتب المبلغ فقط — بدون فتح صفحة أخرى</p>
+  <div class="ents" id="ents"></div>
+  <div class="arow">
+    <input id="dAmt" type="number" inputmode="decimal" placeholder="0" enterkeyhint="done">
+    <button class="addb" onclick="addDebt()">＋ إضافة</button>
+  </div>
+  <div class="amts">
+    <button onclick="bump(500)">500</button><button onclick="bump(1000)">1,000</button>
+    <button onclick="bump(5000)">5,000</button><button onclick="bump(10000)">10,000</button>
+  </div>
+  <p class="selt" id="selTxt"></p>
+</section>
+
+<!-- لوحة التحكم -->
+<section id="secDash">
+  <div class="gauge"><svg viewBox="0 0 300 168" id="arc"></svg>
+    <div class="gc"><div class="bolt">⚡</div><div class="d" id="gDate"></div>
+      <div class="n"><span id="gNum">0</span> <small class="cur"></small></div>
+      <div class="g">الراتب <span id="gSal">0</span> <span class="cur"></span></div></div></div>
+  <div class="card" style="margin-top:14px">
+    <div class="level"><span class="lbl" id="lvlTxt">سهل</span><div class="pills" id="lvlPills"></div></div>
+    <p class="mute" id="lvlTip" style="margin-top:10px"></p>
+    <div class="stats">
+      <div class="stat"><span class="mute">الدين من الراتب</span><b id="stPct">0%</b></div>
+      <div class="stat"><span class="mute">المسدد</span><b id="stPaid">0</b></div>
+      <div class="stat"><span class="mute">الراتب بعد الدين</span><b id="stNet">0</b></div>
+      <div class="stat"><span class="mute">المتبقي بعد الصدقة</span><b id="stFree">0</b></div>
+    </div>
+  </div>
+  <div class="card"><h2>أكبر الديون الحالية</h2><div id="top5"></div></div>
+</section>
+
+<!-- الصدقة -->
+<section class="card" id="secCh">
+  <div class="qh"><h2>🤲 الصدقة</h2><span class="badge">نسبتها <span id="chPct">5</span>% من الراتب</span></div>
+  <div class="gauge sm"><svg viewBox="0 0 300 168" id="arc2"></svg>
+    <div class="gc"><div class="d">تصدّقت بـ</div><div class="n"><span id="chGiven">0</span> <small class="cur"></small></div>
+    <div class="g">المستهدف <span id="chOf">0</span> · <span id="chLeft"></span></div></div></div>
+  <div class="chips" style="margin-top:14px">
+    <button class="chip" onclick="giveQ(500)">500</button><button class="chip" onclick="giveQ(1000)">1,000</button>
+    <button class="chip" onclick="giveQ(2000)">2,000</button><button class="chip" onclick="giveQ(0)">باقي المستهدف</button>
+  </div>
+  <div class="row"><input id="chAmt" type="number" inputmode="decimal" placeholder="مبلغ الصدقة"><button class="btn" style="width:auto;padding:0 22px" onclick="giveQ(+$('chAmt').value)">تصدّق</button></div>
+</section>
+
+<!-- القائمة -->
+<section id="secList">
+  <input id="q" placeholder="🔍 ابحث عن اسم أو ملاحظة" oninput="render()" style="margin-bottom:10px">
+  <div class="chips">
+    <button class="chip on" data-f="active" onclick="flt('active',this)">النشطة</button>
+    <button class="chip" data-f="closed" onclick="flt('closed',this)">المسددة</button>
+    <button class="chip" data-f="all" onclick="flt('all',this)">الكل</button>
+    <button class="chip" onclick="share()">📲 مشاركة الكشف</button>
+  </div>
+  <div id="list"></div>
+</section>
+</div>
+
+<!-- سداد -->
+<div class="sheet" id="paySheet" onclick="if(event.target===this)closeSheet('paySheet')"><div>
+  <h2 id="payT" style="margin-bottom:4px"></h2><p class="mute" id="payI" style="margin-bottom:12px"></p>
+  <input id="payAmt" type="number" inputmode="decimal" style="margin-bottom:10px">
+  <div class="chips"><button class="chip" onclick="payF(.25)">25%</button><button class="chip" onclick="payF(.5)">50%</button><button class="chip" onclick="payF(1)">كامل المتبقي</button></div>
+  <button class="btn" onclick="doPay()">تأكيد السداد</button>
+</div></div>
+
+<div class="sheet" id="newSheet" onclick="if(event.target===this)closeSheet('newSheet')"><div>
+  <h2 style="margin-bottom:12px">جهة جديدة</h2>
+  <input id="nName" placeholder="اسم الجهة" autocomplete="off">
+  <div class="emo" id="emo"></div>
+  <button class="btn" onclick="saveEnt()">حفظ واختيار</button>
+</div></div>
+
+<!-- إعدادات -->
+<div class="sheet" id="setSheet" onclick="if(event.target===this)closeSheet('setSheet')"><div>
+  <h2 style="margin-bottom:4px">الإعدادات</h2>
+  <p class="lb">الراتب الشهري (يُخصم منه الدين تلقائياً)</p><input id="salary" type="number" inputmode="decimal" placeholder="مثال: 150000">
+  <p class="lb">نسبة الصدقة من الراتب %</p><input id="chRate" type="number" inputmode="decimal" placeholder="5">
+  <p class="lb">رمز العملة</p><input id="curIn" placeholder="ر.ي">
+  <button class="btn" style="margin-top:14px" onclick="saveSet()">حفظ</button>
+  <h3 class="sh">المظهر</h3>
+  <p class="lb">النمط</p><div class="chips" id="modeC"></div>
+  <p class="lb">اللون (اختر لوناً أو ركّب لونك)</p><div class="sws" id="swC"></div>
+  <p class="lb">الخط</p><div class="chips" id="fontC"></div>
+  <h3 class="sh">أدوات</h3>
+  <button class="chip wide" id="muteB" onclick="toggleMute()"></button>
+  <button class="chip wide" onclick="askNotif()">🔔 السماح بإشعارات المتصفح للتذكيرات</button>
+  <button class="chip wide" onclick="backup()">💾 تنزيل نسخة احتياطية</button>
+  <label class="chip wide" style="cursor:pointer">📥 استعادة نسخة احتياطية<input type="file" accept=".json" hidden onchange="restore(this)"></label>
+  <button class="chip wide" onclick="newMonth()">بدء شهر جديد (تصفير الصدقة وحذف الديون المسددة)</button>
+</div></div>
+
+<!-- تذكير جديد -->
+<div class="sheet" id="rmSheet" onclick="if(event.target===this)closeSheet('rmSheet')"><div>
+  <h2 id="rmT" style="margin-bottom:10px">تذكير</h2>
+  <input id="rmTitle" placeholder="نص التذكير">
+  <p class="lb">الموعد</p><input id="rmAt" type="datetime-local">
+  <div class="chips" style="margin-top:10px">
+    <button class="chip" onclick="rmQ('h')">بعد ساعة</button><button class="chip" onclick="rmQ('tm')">غداً 9 ص</button>
+    <button class="chip" onclick="rmQ('d3')">بعد 3 أيام</button><button class="chip" onclick="rmQ('w')">بعد أسبوع</button>
+    <button class="chip" onclick="rmQ('me')">نهاية الشهر</button>
+  </div>
+  <p class="lb">التكرار</p><div class="chips" id="repC"></div>
+  <button class="btn" onclick="saveRem()">حفظ التذكير</button>
+  <button class="chip wide" onclick="icsRem()">📅 إضافة للتقويم (يرنّ حتى والتطبيق مغلق)</button>
+</div></div>
+
+<!-- قائمة التذكيرات -->
+<div class="sheet" id="rlSheet" onclick="if(event.target===this)closeSheet('rlSheet')"><div>
+  <h2>التذكيرات</h2><div id="rlList"></div>
+  <button class="btn" onclick="openRem(null)">＋ تذكير جديد</button>
+</div></div>
+
+<!-- المنبه -->
+<div class="sheet" id="alSheet"><div style="text-align:center">
+  <div style="font-size:3rem">⏰</div><h2 id="alT"></h2><p class="mute" id="alI" style="margin:6px 0 16px"></p>
+  <button class="btn" id="alPay" onclick="alPay()">💳 سدّد الآن</button>
+  <div class="row" style="margin-top:10px"><button class="chip" style="flex:1;padding:14px" onclick="alSnooze()">غفوة 10 دقائق</button><button class="chip" style="flex:1;padding:14px" onclick="alDone()">تم ✔️</button></div>
+</div></div>
+
+<!-- السجل -->
+<div class="sheet" id="hSheet" onclick="if(event.target===this)closeSheet('hSheet')"><div><h2 id="hT"></h2><div id="hList"></div></div></div>
+
+<div class="toast" id="toast"></div>
+
+<nav>
+  <button class="cur" id="n1" onclick="tab(this,'secAdd')"><span>🏠</span>الرئيسية</button>
+  <button onclick="tab(this,'secDash')"><span>📊</span>التحليل</button>
+  <button onclick="tab(this,'secCh')"><span>🤲</span>الصدقة</button>
+  <button onclick="tab(this,'secList')"><span>📒</span>الديون</button>
+  <button onclick="openSheet('setSheet')"><span>⚙️</span>الإعدادات</button>
+</nav>
+<script>
+const $=id=>document.getElementById(id),KEY='debts_app_v1';
+let S={salary:0,chRate:5,debts:[],charity:[]},F='active',PID=null;
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const fmt=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});
+const rem=d=>Math.max(0,d.amount-(d.paid||0));
+const today=()=>new Date().toISOString().slice(0,10);
+function toast(t,u){const e=$('toast');e.textContent=t;e.style.pointerEvents='none';
+  if(u){const b=document.createElement('button');b.textContent='تراجع';b.onclick=()=>{u();e.classList.remove('show');snd('tap')};e.appendChild(b);e.style.pointerEvents='auto'}
+  e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),u?6000:2200)}
+function go(id){$(id).scrollIntoView({behavior:'smooth',block:'start'})}
+function openSheet(id){if(id==='setSheet'){$('salary').value=S.salary||'';$('chRate').value=S.chRate;$('curIn').value=S.cur||''}$(id).classList.add('show')}
+function closeSheet(id){$(id).classList.remove('show')}
+function bump(n){$('dAmt').value=(+$('dAmt').value||0)+n}
+
+/* الأصوات (مولّدة بالكود، لا تحتاج ملفات) */
+let AC;
+function tone(f,t,d,type,v){const o=AC.createOscillator(),g=AC.createGain(),b=AC.currentTime+t;o.type=type||'sine';o.frequency.value=f;
+  g.gain.setValueAtTime(0,b);g.gain.linearRampToValueAtTime(v||.18,b+.012);g.gain.exponentialRampToValueAtTime(.0001,b+d);
+  o.connect(g);g.connect(AC.destination);o.start(b);o.stop(b+d+.05)}
+function snd(k){if(S.mute&&k!=='alarm')return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
+  const P={tap:[[880,0,.07,'triangle',.08]],
+   add:[[1318,0,.16],[1760,.09,.3],[2637,.09,.25,'triangle',.05]],
+   pay:[[523,0,.2],[659,.09,.2],[784,.18,.2],[1047,.27,.55]],
+   gift:[[523,0,.7,'sine',.15],[659,.13,.7],[784,.26,.9],[1047,.26,1,'triangle',.05]],
+   err:[[220,0,.14,'square',.06],[185,.17,.24,'square',.06]],
+   alarm:[[988,0,.18,'square',.07],[1319,.2,.18,'square',.07],[988,.4,.18,'square',.07],[1319,.6,.35,'square',.07]]};
+  P[k].forEach(a=>tone(...a));if(navigator.vibrate)navigator.vibrate(k==='err'?[40,40,40]:k==='alarm'?[300,150,300]:25)}catch(e){}}
+function toggleMute(){S.mute=!S.mute;save();muteLbl();snd('tap')}
+function muteLbl(){$('muteB').textContent=S.mute?'🔇 الأصوات: متوقفة':'🔊 الأصوات: تعمل'}
+function tab(b,id){document.querySelectorAll('nav button').forEach(x=>x.classList.remove('cur'));b.classList.add('cur');snd('tap');go(id)}
+
+/* الجهات السريعة */
+const DEF=[['بقالة هائل','🛒'],['حسن للسمك','🐟'],['خالد مقوت','🌿'],['خضروات وائل','🥬'],['خضروات صهيب','🍅'],['مكتبة المالكي','📚'],['صيدليه عادل','💊']];
+if(!S.ents)S.ents=DEF.map(([n,i])=>({n,i}));
+let SEL=null,NE='🛒';
+function ents(){
+  const a={};S.debts.forEach(d=>{if(!d.closed)a[d.name]=(a[d.name]||0)+rem(d)});
+  $('ents').innerHTML=S.ents.map((e,i)=>`<button class="ent${SEL===e.n?' sel':''}" onclick="pick(${i})"><span class="ei">${e.i}</span><span class="en"><b>${esc(e.n)}</b><small>${a[e.n]?'متبقي '+fmt(a[e.n]):'+ إضافة سريعة'}</small></span></button>`).join('')
+   +`<button class="ent new" onclick="openNew()">＋ جهة جديدة</button>`;
+  $('selTxt').textContent=SEL?'الجهة المختارة: '+SEL:'اختر الجهة أولاً'}
+function pick(i){SEL=S.ents[i].n;snd('tap');ents()}
+function openNew(){snd('tap');$('nName').value='';NE='🛒';emo();openSheet('newSheet')}
+function emo(){$('emo').innerHTML=['🛒','🐟','🌿','🥬','🍅','📚','💊','🥖','⛽','🍗','👕','🏠','🚗','📱','🧾','🍽️'].map(e=>`<button class="${e===NE?'on':''}" onclick="NE='${e}';emo()">${e}</button>`).join('')}
+function saveEnt(){const n=$('nName').value.trim();if(!n){snd('err');return toast('اكتب اسم الجهة')}
+  if(!S.ents.some(e=>e.n===n))S.ents.push({n,i:NE});SEL=n;save();closeSheet('newSheet');render();snd('add');toast('تمت إضافة الجهة')}
+function bump(n){$('dAmt').value=(+$('dAmt').value||0)+n;snd('tap')}
+
+/* إضافة دين سريعة: نفس الجهة يتجمع المبلغ تلقائياً */
+function addDebt(){
+  const amt=+$('dAmt').value;
+  if(!SEL){snd('err');return toast('اختر الجهة أولاً')}
+  if(!(amt>0)){snd('err');$('dAmt').focus();return toast('أدخل المبلغ')}
+  const snap=JSON.stringify(S.debts);
+  let d=S.debts.find(x=>!x.closed&&x.name===SEL);
+  if(d)d.amount+=amt;
+  else{d={id:'d'+Date.now(),name:SEL,note:'',amount:amt,paid:0,date:today(),closed:false,h:[]};S.debts.unshift(d)}
+  (d.h=d.h||[]).push({t:'add',a:amt,d:Date.now()});
+  d.last=Date.now();$('dAmt').value='';save();render();snd('add');
+  toast('تمت إضافة '+fmt(amt)+' على '+SEL,()=>{S.debts=JSON.parse(snap);save();render()})}
+$('dAmt').addEventListener('keydown',e=>{if(e.key==='Enter')addDebt()});
+muteLbl();
+/* سداد */
+function openPay(id){PID=id;const d=S.debts.find(x=>x.id===id);
+  $('payT').textContent='سداد لـ '+d.name;
+  $('payI').textContent='المتبقي '+fmt(rem(d))+' من '+fmt(d.amount);
+  $('payAmt').value=rem(d);openSheet('paySheet')}
+function payF(f){const d=S.debts.find(x=>x.id===PID);$('payAmt').value=Math.round(rem(d)*f)}
+function doPay(){const d=S.debts.find(x=>x.id===PID),v=+$('payAmt').value;
+  if(!(v>0)){snd('err');return toast('أدخل مبلغ السداد')}
+  const snap=JSON.stringify(S.debts);
+  d.paid=Math.min(d.amount,(d.paid||0)+v);if(d.paid>=d.amount)d.closed=true;(d.h=d.h||[]).push({t:'pay',a:v,d:Date.now()});
+  save();closeSheet('paySheet');render();snd('pay');toast(d.closed?'تم سداد الدين بالكامل ✔️':'تم تسجيل السداد',()=>{S.debts=JSON.parse(snap);save();render()})}
+function del(id){const d=S.debts.find(x=>x.id===id);if(confirm('حذف دين '+d.name+'؟')){S.debts=S.debts.filter(x=>x.id!==id);save();render()}}
+
+/* صدقة */
+function giveQ(v){
+  const target=S.salary*S.chRate/100,given=S.charity.reduce((a,c)=>a+c.a,0);
+  if(v===0)v=Math.max(0,target-given);
+  if(!(v>0)){snd('err');return toast(S.salary?'اكتملت صدقة هذا الشهر':'حدد الراتب أولاً من الإعدادات')}
+  S.charity.push({a:v,d:today()});$('chAmt').value='';save();render();snd('gift');toast('تقبل الله منك 🤲 '+fmt(v))}
+
+function saveSet(){S.salary=+$('salary').value||0;S.cur=$('curIn').value.trim()||'ر.ي';S.chRate=Math.max(0,+$('chRate').value||0);save();closeSheet('setSheet');render();snd('add');toast('تم الحفظ')}
+function newMonth(){if(confirm('سيتم تصفير الصدقة وحذف الديون المسددة. متابعة؟')){S.charity=[];S.debts=S.debts.filter(d=>!d.closed);save();closeSheet('setSheet');render()}}
+function flt(f,b){F=f;document.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));render()}
+function share(){
+  const a=S.debts.filter(d=>!d.closed);
+  const t='كشف الديون\n'+a.map(d=>d.name+': '+fmt(rem(d))+' '+S.cur).join('\n')+'\nالإجمالي: '+fmt(a.reduce((s,d)=>s+rem(d),0))+' '+S.cur;
+  if(navigator.share)navigator.share({text:t}).catch(()=>{});
+  else navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>toast('تم نسخ الكشف'))}
+
+/* رسم القوس: 10 كتل عريضة بحواف مدورة مثل الصورة المرجعية */
+function arc(id,n){
+  let h='';const cx=150,cy=150,R=146,r=84,N=10,g=5,sw=18;
+  const P=(a,k)=>[cx+k*Math.cos(a),cy-k*Math.sin(a)].map(v=>v.toFixed(1)).join(',');
+  for(let i=0;i<N;i++){
+    const a=Math.PI-i*Math.PI/N,b=Math.PI-(i+1)*Math.PI/N,k1=R-sw/2,k2=r+sw/2,o=(g+sw)/2;
+    const pts=[P(a-o/k1,k1),P(b+o/k1,k1),P(b+o/k2,k2),P(a-o/k2,k2)].join(' ');
+    const c=i<n?'var(--peach)':'var(--track)';
+    h+=`<polygon points="${pts}" style="fill:${c};stroke:${c}" stroke-width="${sw}" stroke-linejoin="round"/>`}
+  $(id).innerHTML=h}
+const pills=(n,id)=>$(id).innerHTML=[0,1,2,3,4].map(i=>`<span class="pill${i<n?' on':''}"></span>`).join('');
+
+function render(){
+  const act=S.debts.filter(d=>!d.closed),total=S.debts.reduce((s,d)=>s+d.amount,0),
+    paid=S.debts.reduce((s,d)=>s+(d.paid||0),0),left=total-paid,
+    pct=S.salary?left/S.salary*100:0,
+    target=S.salary*S.chRate/100,given=S.charity.reduce((a,c)=>a+c.a,0);
+  arc('arc',Math.min(10,Math.round(pct/10)));
+  $('gDate').textContent=new Date().toLocaleDateString('ar-EG',{day:'numeric',month:'long'});
+  $('gNum').textContent=fmt(left);$('gSal').textContent=fmt(S.salary);
+  const lv=!S.salary?0:pct<10?1:pct<20?2:pct<35?3:pct<50?4:5;
+  pills(lv,'lvlPills');$('lvlTxt').textContent=['—','سهل','مقبول','متوسط','مرتفع','صعب'][lv];
+  $('lvlTip').textContent=['حدد راتبك من ⚙️ ليظهر التحليل','ديونك خفيفة، استمر على هذا النهج','وضعك جيد، واصل السداد','ركّز على سداد الديون قبل مصاريف جديدة','الدين مرتفع، قلّل المصاريف غير الضرورية','الدين يتجاوز نصف راتبك، ابدأ بسداد الأكبر'][lv];
+  $('stPct').textContent=pct.toFixed(1)+'%';$('stPaid').textContent=fmt(paid);
+  $('stNet').textContent=fmt(S.salary-left);$('stFree').textContent=fmt(S.salary-left-given);
+  $('chPct').textContent=S.chRate;$('chGiven').textContent=fmt(given);$('chOf').textContent=fmt(target);
+  arc('arc2',target?Math.min(10,Math.round(given/target*10)):0);
+  $('chLeft').textContent=target?(given>=target?'اكتملت ✔️':'باقي '+fmt(target-given)):'حدد الراتب';
+  ents();
+  // القائمة
+  const q=$('q').value.trim().toLowerCase();
+  const L=S.debts.filter(d=>(F==='all'||(F==='closed')===!!d.closed)&&(d.name+' '+(d.note||'')).toLowerCase().includes(q));
+  const rm={};S.rem.forEach(r=>{if(r.did&&(!rm[r.did]||r.at<rm[r.did]))rm[r.did]=r.at});
+  $('list').innerHTML=L.length?L.map(d=>{const p=d.amount?(d.paid||0)/d.amount*100:0,sp=S.salary?rem(d)/S.salary*100:0;
+    return `<div class="debt${d.closed?' done':''}"><div class="dt"><div class="av">${esc(d.name[0])}</div>
+    <div class="nm"><b>${esc(d.name)}</b><span class="mute">${esc(d.note||d.date)}</span>${rm[d.id]?`<br><span class="tag">🔔 ${fdt(rm[d.id])}</span>`:''}</div>
+    <div class="am"><b>${fmt(rem(d))}</b><span class="peach" style="font-size:.8rem">${sp.toFixed(1)}% من الراتب</span></div></div>
+    <div class="bar"><i style="width:${p}%"></i></div>
+    <div class="acts">${d.closed?'':`<button class="chip" style="flex:2" onclick="openPay('${d.id}')">💳 سداد</button><button class="chip s" onclick="openRem('${d.id}')" aria-label="تذكير">🔔</button>`}<button class="chip s" onclick="hist('${d.id}')" aria-label="السجل">📜</button><button class="chip s" onclick="del('${d.id}')" aria-label="حذف">🗑</button></div></div>`}).join('')
+    :'<div class="empty mute">لا توجد ديون هنا. أضف أول دين من الأعلى.</div>';
+  const tp=S.debts.filter(d=>!d.closed&&rem(d)>0).sort((a,b)=>rem(b)-rem(a)).slice(0,5),mx=tp[0]?rem(tp[0]):1;
+  $('top5').innerHTML=tp.length?tp.map(d=>`<div class="tb"><div class="tbh"><b>${esc(d.name)}</b><span>${fmt(rem(d))}</span></div><div class="bar" style="margin:6px 0 14px"><i style="width:${rem(d)/mx*100}%"></i></div></div>`).join(''):'<p class="mute">لا توجد ديون نشطة</p>';
+  $('bellDot').style.display=S.rem.length?'block':'none';
+  document.querySelectorAll('.cur').forEach(e=>e.textContent=S.cur);
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+S.rem=S.rem||[];S.cur=S.cur||'ر.ي';S.ui=S.ui||{mode:'light',p:0,font:0};
+/* السجل */
+function hist(id){const d=S.debts.find(x=>x.id===id);$('hT').textContent='سجل: '+d.name;
+  $('hList').innerHTML=d.h&&d.h.length?d.h.slice().reverse().map(e=>`<div class="rli"><b>${e.t==='add'?'➕ دين':'💳 سداد'}</b><span>${fmt(e.a)} ${esc(S.cur)}</span><span class="mute">${new Date(e.d).toLocaleDateString('ar-EG',{day:'numeric',month:'short'})}</span></div>`).join(''):'<p class="mute" style="padding:10px 0">لا يوجد سجل بعد.</p>';
+  openSheet('hSheet')}
+/* التذكيرات والمنبه */
+let RDID=null,RP='once',AL=null,ALT=null;
+const RPN={once:'مرة واحدة',daily:'يومياً',weekly:'أسبوعياً',monthly:'شهرياً'};
+const fdt=ms=>new Date(ms).toLocaleString('ar-EG',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+function openRem(did){closeSheet('rlSheet');RDID=did;const d=did&&S.debts.find(x=>x.id===did);
+  $('rmTitle').value=d?'سداد دين '+d.name:'';$('rmT').textContent=d?'تذكير سداد: '+d.name:'تذكير جديد';
+  RP='once';repC();rmQ('tm');openSheet('rmSheet')}
+function repC(){$('repC').innerHTML=Object.keys(RPN).map(k=>`<button class="chip${k===RP?' on':''}" onclick="RP='${k}';repC()">${RPN[k]}</button>`).join('')}
+function rmQ(k){const n=new Date();let d=new Date(n);d.setSeconds(0,0);
+  if(k==='h')d=new Date(n.getTime()+36e5);
+  else{d.setHours(9,0);if(k==='tm')d.setDate(n.getDate()+1);if(k==='d3')d.setDate(n.getDate()+3);if(k==='w')d.setDate(n.getDate()+7);if(k==='me')d=new Date(n.getFullYear(),n.getMonth()+1,0,9,0)}
+  $('rmAt').value=new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);snd('tap')}
+function saveRem(){const at=new Date($('rmAt').value).getTime(),t=$('rmTitle').value.trim()||'تذكير';
+  if(!at||isNaN(at)){snd('err');return toast('اختر موعد التذكير')}
+  if(at<Date.now()-6e4){snd('err');return toast('الموعد في الماضي')}
+  S.rem.push({id:'r'+Date.now(),did:RDID,t,at,rep:RP});S.rem.sort((a,b)=>a.at-b.at);save();closeSheet('rmSheet');render();snd('add');toast('تم ضبط التذكير: '+fdt(at))}
+function openRL(){snd('tap');$('rlList').innerHTML=S.rem.length?S.rem.map(r=>`<div class="rli"><div><b>${esc(r.t)}</b><div class="mute">${fdt(r.at)} · ${RPN[r.rep]}</div></div><button class="chip" onclick="delRem('${r.id}')">🗑</button></div>`).join(''):'<p class="mute" style="padding:10px 0 16px">لا توجد تذكيرات. اضغط 🔔 على أي دين أو أضف تذكيراً جديداً.</p>';openSheet('rlSheet')}
+function delRem(id){S.rem=S.rem.filter(r=>r.id!==id);save();render();openRL()}
+function nextAt(r){const d=new Date(r.at),n=Date.now();do{if(r.rep==='daily')d.setDate(d.getDate()+1);else if(r.rep==='weekly')d.setDate(d.getDate()+7);else d.setMonth(d.getMonth()+1)}while(d.getTime()<=n);return d.getTime()}
+function checkR(){if(AL)return;const r=S.rem.find(x=>x.at<=Date.now());if(!r)return;AL=r;
+  const d=r.did&&S.debts.find(x=>x.id===r.did),live=d&&!d.closed;
+  $('alT').textContent=r.t;$('alI').textContent=live?'المتبقي على '+d.name+': '+fmt(rem(d))+' '+S.cur:'';
+  $('alPay').style.display=live?'block':'none';openSheet('alSheet');snd('alarm');clearInterval(ALT);ALT=setInterval(()=>snd('alarm'),1700);
+  try{if('Notification' in window&&Notification.permission==='granted')new Notification('⏰ '+r.t)}catch(e){}}
+function stopAl(){clearInterval(ALT);AL=null;closeSheet('alSheet')}
+function alDone(){const r=AL;if(r.rep==='once')S.rem=S.rem.filter(x=>x!==r);else r.at=nextAt(r);save();stopAl();render();checkR()}
+function alSnooze(){AL.at=Date.now()+6e5;save();stopAl();render();toast('سيتم تذكيرك بعد 10 دقائق')}
+function alPay(){const id=AL.did;alDone();openPay(id)}
+function askNotif(){if(!('Notification' in window))return toast('المتصفح لا يدعم الإشعارات');Notification.requestPermission().then(r=>toast(r==='granted'?'تم السماح بالإشعارات':'لم يتم السماح'))}
+function icsRem(){const at=new Date($('rmAt').value);if(isNaN(at)){snd('err');return toast('اختر الموعد')}
+  const t=($('rmTitle').value.trim()||'تذكير').replace(/[\r\n,;]/g,' '),z=n=>String(n).padStart(2,'0'),
+  f=d=>d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'T'+z(d.getHours())+z(d.getMinutes())+'00',rr={daily:'DAILY',weekly:'WEEKLY',monthly:'MONTHLY'}[RP];
+  const c=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//debts//AR','BEGIN:VEVENT','UID:'+Date.now()+'@debts','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z','DTSTART:'+f(at),'DTEND:'+f(new Date(+at+18e5)),'SUMMARY:'+t,rr?'RRULE:FREQ='+rr:'','BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:'+t,'END:VALARM','END:VEVENT','END:VCALENDAR'].filter(Boolean).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/calendar'}));a.download='reminder.ics';a.click();toast('افتح الملف لإضافته للتقويم')}
+/* نسخ احتياطي */
+function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='debts-backup-'+today()+'.json';a.click();toast('تم تنزيل النسخة')}
+function restore(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!Array.isArray(o.debts))throw 0;S=Object.assign({salary:0,chRate:5,debts:[],charity:[],rem:[],ents:S.ents},o);save();location.reload()}catch(e){snd('err');toast('ملف غير صالح')}};r.readAsText(f)}
+/* المظهر: النمط واللون والخط */
+const ACC=[['دافئ','#F4A77B','#F28C38'],['أخضر','#8FD0A3','#3FAE6A'],['أزرق','#8DB8F2','#3D7FE0'],['وردي','#F2A1BE','#E0518A'],['بنفسجي','#B9A2F0','#7C5CE0'],['ذهبي','#EBC46B','#D49A1E']];
+const FONTS=[['تجوال','Tajawal'],['القاهرة','Cairo'],['المراعي','Almarai'],['نوتو كوفي','Noto Kufi Arabic'],['ريدكس','Readex Pro'],['خط النظام','system-ui']];
+function dk(h,f){const n=parseInt(h.slice(1),16);return '#'+[16,8,0].map(s=>Math.round(((n>>s)&255)*f).toString(16).padStart(2,'0')).join('')}
+function applyUI(keep){const u=S.ui,r=document.documentElement,st=r.style;
+  r.dataset.mode=u.mode==='auto'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):u.mode;
+  const pc=u.c?[u.c,dk(u.c,.85)]:[ACC[u.p][1],ACC[u.p][2]];st.setProperty('--peach',pc[0]);st.setProperty('--or',pc[1]);
+  const f=FONTS[u.font]||FONTS[0];
+  if(u.font>0&&f[1]!=='system-ui'&&!document.getElementById('f_'+f[1])){const l=document.createElement('link');l.id='f_'+f[1];l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family='+f[1].replace(/ /g,'+')+':wght@400;500;700;800&display=swap';document.head.appendChild(l)}
+  st.setProperty('--ff',u.font===0?'"DM Sans","Tajawal",sans-serif':f[1]==='system-ui'?'system-ui,sans-serif':`"${f[1]}",sans-serif`);
+  if(keep)return;
+  $('modeC').innerHTML=[['light','☀️ فاتح'],['dark','🌙 داكن'],['auto','📱 تلقائي']].map(([k,l])=>`<button class="chip${u.mode===k?' on':''}" onclick="S.ui.mode='${k}';ui2()">${l}</button>`).join('');
+  $('swC').innerHTML=ACC.map((a,i)=>`<button class="sw${!u.c&&u.p===i?' on':''}" style="background:${a[2]}" onclick="S.ui.p=${i};delete S.ui.c;ui2()" aria-label="${a[0]}"></button>`).join('')+`<input type="color" id="cc" value="${u.c||ACC[u.p][2]}" oninput="S.ui.c=this.value;applyUI(true)" onchange="save();applyUI()">`;
+  $('fontC').innerHTML=FONTS.map((f,i)=>`<button class="chip${u.font===i?' on':''}" onclick="S.ui.font=${i};ui2()">${f[0]}</button>`).join('')}
+function ui2(){save();applyUI();snd('tap')}
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>applyUI(true));
+applyUI();render();checkR();setInterval(checkR,15000);document.addEventListener('visibilitychange',checkR);
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {scope: './'})
+      .catch(err => console.warn('Service Worker registration failed:', err));
+  });
+}
+</script>
+
+</body>
+</html>
