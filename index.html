@@ -209,13 +209,14 @@ nav button.cur{background:linear-gradient(160deg,color-mix(in srgb,var(--or) 72%
 }
 </style>
 
-<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#F28C38">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="دفتر الديون">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='26' fill='%23F28C38'/><text x='50' y='68' font-size='54' text-anchor='middle'>💳</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='26' fill='%23F28C38'/><text x='50' y='68' font-size='54' text-anchor='middle'>💳</text></svg>">
+<link rel="manifest" href='data:application/manifest+json,{"name":"دفتر الديون","short_name":"دفتر الديون","start_url":"./index.html","display":"standalone","background_color":"#F4F1EC","theme_color":"#F28C38","dir":"rtl","lang":"ar"}'>
 
 </head>
 <body>
@@ -392,13 +393,37 @@ nav button.cur{background:linear-gradient(160deg,color-mix(in srgb,var(--or) 72%
 <script>
 const $=id=>document.getElementById(id),KEY='debts_app_v1';
 let S={salary:0,chRate:5,debts:[],charity:[]},F='active',PID=null;
+const idb={
+  open:()=>new Promise((res,rej)=>{
+    if(!window.indexedDB)return rej();
+    const r=indexedDB.open('DebtsOfflineDB',1);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore('store');
+    r.onsuccess=e=>res(e.target.result);
+    r.onerror=()=>rej();
+  }),
+  set:async(k,v)=>{try{const db=await idb.open(),tx=db.transaction('store','readwrite');tx.objectStore('store').put(JSON.parse(JSON.stringify(v)),k)}catch(e){}},
+  get:async(k)=>{try{const db=await idb.open();return await new Promise(res=>{const r=db.transaction('store','readonly').objectStore('store').get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)})}catch(e){return null}}
+};
 try{const r=localStorage.getItem(KEY);
   try{if(r)S=Object.assign(S,JSON.parse(r))}catch(e){const b=localStorage.getItem(KEY+'_bak');if(b)S=Object.assign(S,JSON.parse(b))}
   const td=new Date().toISOString().slice(0,10);
   if(r&&localStorage.getItem(KEY+'_bd')!==td){localStorage.setItem(KEY+'_bak',r);localStorage.setItem(KEY+'_bd',td)}
 }catch(e){}
+idb.get(KEY).then(saved=>{
+  if(saved&&(!S.debts||!S.debts.length)&&((saved.debts&&saved.debts.length)||saved.salary)){
+    S=Object.assign(S,saved);
+    S.rem=S.rem||[];S.cur=S.cur||'ر.ي';S.ui=S.ui||{mode:'light',p:0,font:0};
+    try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+    if(typeof applyUI==='function')applyUI();
+    if(typeof render==='function')render();
+    if(typeof muteLbl==='function')muteLbl();
+    if(typeof showLock==='function')showLock();
+  }else if(S.debts&&S.debts.length){
+    idb.set(KEY,S);
+  }
+});
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}idb.set(KEY,S)};
 const fmt=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});
 const rem=d=>Math.max(0,d.amount-(d.paid||0));
 const today=()=>new Date().toISOString().slice(0,10);
@@ -809,10 +834,9 @@ showLock();
 </script>
 
 <script>
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', {scope: './'})
-      .catch(err => console.warn('Service Worker registration failed:', err));
+    navigator.serviceWorker.register('./sw.js', {scope: './'}).catch(() => {});
   });
 }
 </script>
